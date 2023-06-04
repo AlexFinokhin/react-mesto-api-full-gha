@@ -1,0 +1,7 @@
+.popup__text {
+  margin: 0 0 calc((100vw - 320px) / (1280 - 320) * (46 - 70) + 70px);
+  color: #fff;
+  font-size: calc((100vw - 320px) / (1280 - 320) * (24 - 18) + 12px);
+  font-weight: 400;
+  line-height: calc((100vw - 320px) / (1280 - 320) * (29 - 22) + 15px);
+}
