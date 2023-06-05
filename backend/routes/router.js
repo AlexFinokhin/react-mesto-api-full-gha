@@ -11,6 +11,12 @@ const authLimiterOptions = require('../configs/rateLimit');
 
 const authLimiter = rateLimit(authLimiterOptions);
 
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 router.post('/signin', authLimiter, validationLogin, login);
 router.post('/signup', authLimiter, validationCreateUser, createUser);
 
