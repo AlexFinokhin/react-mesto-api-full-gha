@@ -81,7 +81,6 @@ export class Api {
 const api = new Api({
   baseUrl: "api.ryangosling.nomoredomains.rocks",
   headers: {
-    authorization: "71809042-8d48-4365-9054-51d9ac130004",
     "Content-Type": "application/json",
   },
 });
