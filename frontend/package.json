@@ -39,8 +39,8 @@
       "last 1 safari version"
     ]
   },
-   "homepage": "https://alexfinokhin.github.io/react-mesto-auth/",
+  "homepage": "/",
   "devDependencies": {
     "gh-pages": "^5.0.0"
-}
+  }
 }
