@@ -49,7 +49,7 @@ export class Auth {
 }
 
 const auth = new Auth({
-  baseUrl: "https://auth.nomoreparties.co",
+  baseUrl: "api.ryangosling.nomoredomains.rocks",
   headers: {
     "Content-Type": "application/json",
   },
