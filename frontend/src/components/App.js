@@ -32,52 +32,38 @@ function App() {
   const [tooltipImageSrc, setTooltipImageSrc] = useState("");
   const [tooltipText, setTooltipText] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userEmail, setUserEmail] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
 
-  const fetchData = useCallback(async () => {
-    try {
-      const profileInfo = await api.getUserInfo();
-      setCurrentUser(profileInfo);
-      const data = await api.getInitialCards();
-      setCards(data);
-    } catch (error) {
-      console.log(`Ошибка при получении данных: ${error.message}`);
-    }
-  }, []);
-
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchData();
-    }
-  }, [fetchData, isLoggedIn]);
+    const token = localStorage.getItem('userId');
 
-  const checkToken = useCallback(async () => {
-    const token = localStorage.getItem("jwt");
-    if (isLoggedIn === true) {
-      navigate("/");
-    } else if (token) {
-      try {
-        const res = await auth.getJwt(token);
-        if (res) {
+    if (token) {
+      auth.getJwt(token)
+        .then((data) => {
           setIsLoggedIn(true);
-          setUserEmail(res.data.email);
-        }
-      } catch (error) {
-        console.log(`Ошибка ${error} при сохранении токена`);
-      }
-    }
-  }, [isLoggedIn, navigate]);
+          setUserEmail(data.email);
+        })
+        .then(() => {
+          navigate("/", { replace: true });
+        });
 
-  useEffect(() => {
-    checkToken();
-  }, [checkToken]);
+      Promise.all([api.getCurrentUserInfo(), api.getInitialCards()])
+        .then(res => {
+          const [userData, cardsArray] = res;
+          setCards(cardsArray.reverse());
+          setCurrentUser(userData);
+        })
+        .catch(err => console.log(err));
+    }
+  }, [navigate])
+
 
   const onSignUp = useCallback(
     async ({ email, password }) => {
       try {
         await auth.handleRegistration({ email, password });
-        navigate("/sign-in");
+        navigate("/signin");
         setTooltipImageSrc(success);
         setTooltipText("Вы успешно зарегистрировались!");
         setIsTooltipOpen(true);
@@ -94,7 +80,7 @@ function App() {
     async ({ email, password }) => {
       try {
         const res = await auth.handleLogIn({ email, password });
-        localStorage.setItem("jwt", res.token);
+        localStorage.setItem("userId", res.token);
         setIsLoggedIn(true);
         setUserEmail(email);
         navigate("/");
@@ -111,23 +97,23 @@ function App() {
     await Promise.all([
       setIsLoggedIn(false),
       setUserEmail(null),
-      localStorage.removeItem("jwt"),
+      localStorage.removeItem("userId"),
     ]);
 
-    navigate("/sign-in");
+    navigate("/signin");
   }, [navigate]);
 
-  const handleCardLike = async (card) => {
-    try {
-      const isLiked = card.likes.some((user) => user._id === currentUser._id);
-      const newCard = await api.setLike(card._id, !isLiked);
+ const handleCardLike = (card) => {
+  const isLiked = card.likes.some((i) => i === currentUser._id);
+
+  api.changeLikeCardStatus(isLiked, card._id)
+    .then((newCard) => {
       setCards((state) =>
-        state.map((item) => (item._id === card._id ? newCard : item))
+        state.map((c) => (c._id === card._id ? newCard : c))
       );
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    })
+    .catch((err) => console.log(err));
+};
 
   const handleAddPlaceSubmit = async (data) => {
     try {
@@ -200,19 +186,19 @@ function App() {
         <div className="page__container">
           <Routes>
             <Route
-              path="/sign-up"
+              path="/signup"
               element={
                 <>
-                  <Header linkText="Войти" route="/sign-in" />
+                  <Header linkText="Войти" route="/signin" />
                   <Register onSignUp={onSignUp} />
                 </>
               }
             />
             <Route
-              path="/sign-in"
+              path="/signin"
               element={
                 <>
-                  <Header linkText="Регистрация" route="/sign-up" />
+                  <Header linkText="Регистрация" route="/signup" />
                   <Login onSignIn={onSignIn} />
                 </>
               }
@@ -225,7 +211,7 @@ function App() {
                     linkText="Выйти"
                     userEmail={userEmail}
                     onClick={onSignOut}
-                    route="/sign-in"
+                    route="/signin"
                   />
                   <ProtectedRoute
                     component={Main}
@@ -244,7 +230,7 @@ function App() {
             />
             <Route
               path="*"
-              element={<Navigate to={isLoggedIn ? "/" : "/sign-in"} />}
+              element={<Navigate to={isLoggedIn ? "/" : "/signin"} />}
             />
           </Routes>
           <AddPlacePopup

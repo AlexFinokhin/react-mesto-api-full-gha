@@ -1,87 +1,98 @@
-export class Api {
+// Для работы с API создайте класс Api.
+// Все запросы должны быть методами этого класса.
+class Api {
   constructor(options) {
-    this.baseUrl = options.baseUrl;
-    this.headers = options.headers;
+    this._baseUrl = options.baseUrl;
+    this._headers = options.headers;
   }
 
-  async fetch(path, options = {}) {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      headers: {
-        ...this.headers,
-        ...options.headers,
-      },
-      ...options,
-    });
-    return this.checkResponse(res);
+  _request(url, options) {
+    return fetch(url, options).then(this._checkResponse);
   }
 
-  async checkResponse(res) {
-    const data = await res.json();
+  _checkResponse(res) {
     if (res.ok) {
-      return data;
-    } else {
-      const error = new Error(`API error: ${data.message || res.statusText}`);
-      throw error;
+      return res.json();
     }
+    // если ошибка, отклоняем промис
+    return Promise.reject(`Err: ${res.status}`);
   }
 
-  getUserInfo() {
-    return this.fetch("/users/me");
+  // Загрузка информации о пользователе с сервера
+  async getCurrentUserInfo() {
+    return await this._request(`${this._baseUrl}/users/me`, {
+      headers: this._headers,
+    });
   }
 
-  getInitialCards() {
-    return this.fetch("/cards");
+  // Загрузка карточек с сервера
+  async getInitialCards() {
+    return await this._request(`${this._baseUrl}/cards`, {
+      headers: this._headers,
+    });
   }
 
-  setUserInfo(data) {
-    const options = {
+  // Редактирование профиля
+  async setUserInfo(data) {
+    return await this._request(`${this._baseUrl}/users/me`, {
       method: "PATCH",
+      headers: this._headers,
       body: JSON.stringify({
         name: data.name,
         about: data.about,
+        email: data.email,
       }),
-    };
-    return this.fetch("/users/me", options);
+    });
   }
 
-  addCard(data) {
-    const options = {
+  // Добавление новой карточки
+  async addCard(data) {
+    return await this._request(`${this._baseUrl}/cards`, {
       method: "POST",
+      headers: this._headers,
       body: JSON.stringify(data),
-    };
-    return this.fetch("/cards", options);
+    });
   }
 
-  deleteCard(cardId) {
-    const options = {
+  // Удаление карточки с сервера
+  async deleteCard(cardId) {
+    return await this._request(`${this._baseUrl}/cards/${cardId}`, {
       method: "DELETE",
-    };
-    return this.fetch(`/cards/${cardId}`, options);
+      headers: this._headers,
+    });
   }
 
-  setLike(cardId, isLiked) {
-    const method = isLiked ? "PUT" : "DELETE";
-    const options = {
-      method: method,
+  async changeLikeCardStatus(isLiked, cardId) {
+    const url = isLiked ? `${this._baseUrl}/cards/${cardId}/likes` : `${this._baseUrl}/cards/${cardId}/likes`;
+    const headers = {
+      authorization: `Bearer ${localStorage.getItem("jwt")}`,
+      "Content-Type": "application/json",
     };
-    return this.fetch(`/cards/${cardId}/likes`, options);
+    return fetch(url, {
+      method: isLiked ? 'DELETE' : 'PUT',
+      headers: headers,
+    })
   }
 
-  setUserAvatar(data) {
-    const options = {
+  
+
+
+  // Обновление аватара пользователя:
+  async setUserAvatar(data) {
+    return await this._request(`${this._baseUrl}/users/me/avatar`, {
       method: "PATCH",
+      headers: this._headers,
       body: JSON.stringify({
         avatar: data.avatar,
       }),
-    };
-    return this.fetch("/users/me/avatar", options);
+    });
   }
 }
 
 const api = new Api({
-  baseUrl: "https://mesto.nomoreparties.co/v1/cohort-60",
+  baseUrl: "http://localhost:3000",
   headers: {
-    authorization: "71809042-8d48-4365-9054-51d9ac130004",
+    authorization: `Bearer ${localStorage.getItem("jwt")}`,
     "Content-Type": "application/json",
   },
 });
