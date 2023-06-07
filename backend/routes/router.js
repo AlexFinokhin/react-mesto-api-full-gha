@@ -9,6 +9,8 @@ const usersRouter = require('./users');
 const NotFoundError = require('../errors/404-NotFoundError');
 const authLimiterOptions = require('../configs/rateLimit');
 
+const { requestLogger, errorLogger } = require('../configs/winston');
+
 const authLimiter = rateLimit(authLimiterOptions);
 
 router.get('/crash-test', () => {
@@ -17,6 +19,8 @@ router.get('/crash-test', () => {
   }, 0);
 });
 
+router.use(requestLogger);
+
 router.post('/signin', authLimiter, validationLogin, login);
 router.post('/signup', authLimiter, validationCreateUser, createUser);
 
@@ -24,6 +28,9 @@ router.use(auth);
 
 router.use('/users', usersRouter);
 router.use('/cards', cardsRouter);
+
+router.use(errorLogger);
+
 router.use((request, response, next) => {
   next(new NotFoundError('Ошибка: Страница не найдена'));
 });
