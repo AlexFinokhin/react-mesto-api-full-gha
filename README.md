@@ -7,7 +7,7 @@
 
 Адрес репозитория: https://github.com/AlexFinokhin/react-mesto-api-full-gha
 
-## Ссылки мой проект
+## Ссылки на мой проект
 
 IP 51.250.84.63
 
