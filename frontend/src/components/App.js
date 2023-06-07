@@ -36,7 +36,7 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('userId');
+    const token = localStorage.getItem('jwt');
 
     if (token) {
       auth.getJwt(token)
@@ -56,7 +56,20 @@ function App() {
         })
         .catch(err => console.log(err));
     }
-  }, [navigate])
+  }, [navigate]);
+
+  // проблемный лайк
+  const handleCardLike = (card) => {
+    const isLiked = card.likes.some((i) => i === currentUser._id);
+
+    api.changeLikeCardStatus(isLiked, card._id)
+      .then((newCard) => {
+        setCards((state) =>
+          state.map((c) => (c._id === card._id ? newCard : c))
+        );
+      })
+      .catch((err) => console.log(err));
+  };
 
 
   const onSignUp = useCallback(
@@ -80,7 +93,7 @@ function App() {
     async ({ email, password }) => {
       try {
         const res = await auth.handleLogIn({ email, password });
-        localStorage.setItem("userId", res.token);
+        localStorage.setItem("jwt", res.token);
         setIsLoggedIn(true);
         setUserEmail(email);
         navigate("/");
@@ -97,23 +110,13 @@ function App() {
     await Promise.all([
       setIsLoggedIn(false),
       setUserEmail(null),
-      localStorage.removeItem("userId"),
+      localStorage.removeItem("jwt"),
     ]);
 
     navigate("/signin");
   }, [navigate]);
 
- const handleCardLike = (card) => {
-  const isLiked = card.likes.some((i) => i === currentUser._id);
 
-  api.changeLikeCardStatus(isLiked, card._id)
-    .then((newCard) => {
-      setCards((state) =>
-        state.map((c) => (c._id === card._id ? newCard : c))
-      );
-    })
-    .catch((err) => console.log(err));
-};
 
   const handleAddPlaceSubmit = async (data) => {
     try {

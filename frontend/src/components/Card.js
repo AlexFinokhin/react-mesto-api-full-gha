@@ -1,4 +1,5 @@
 import { useContext } from "react";
+
 import CurrentUserContext from "../contexts/CurrentUserContext";
 
 function Card({ card, onCardClick, onCardLike, onCardDelete }) {
@@ -23,7 +24,7 @@ function Card({ card, onCardClick, onCardLike, onCardDelete }) {
   }
 
   return (
-    <figure className="element" key={card._id}>
+    <figure className="element">
       <img
         className="element__image"
         alt={name}

@@ -1,99 +1,121 @@
-// Для работы с API создайте класс Api.
-// Все запросы должны быть методами этого класса.
-class Api {
+export class Api {
   constructor(options) {
     this._baseUrl = options.baseUrl;
     this._headers = options.headers;
   }
 
-  _request(url, options) {
-    return fetch(url, options).then(this._checkResponse);
+  async _request(url, options) {
+    const response = await fetch(url, options);
+    return this._checkResponse(response);
   }
 
-  _checkResponse(res) {
-    if (res.ok) {
-      return res.json();
+  _checkResponse(response) {
+    if (response.ok) {
+      return response.json();
     }
-    // если ошибка, отклоняем промис
-    return Promise.reject(`Err: ${res.status}`);
+    throw new Error("Произошла ошибка");
   }
 
-  // Загрузка информации о пользователе с сервера
+  // проблемный лайк
+  async changeLikeCardStatus(isLiked, cardId) {
+    const method = isLiked ? "DELETE" : "PUT";
+    const url = `${this._baseUrl}/cards/${cardId}/likes`;
+    const options = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+    };
+    return await this._request(url, options);
+  }
+
   async getCurrentUserInfo() {
-    return await this._request(`${this._baseUrl}/users/me`, {
-      headers: this._headers,
-    });
+    const url = `${this._baseUrl}/users/me`;
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+    };
+    return await this._request(url, options);
   }
 
-  // Загрузка карточек с сервера
   async getInitialCards() {
-    return await this._request(`${this._baseUrl}/cards`, {
-      headers: this._headers,
-    });
+    const url = `${this._baseUrl}/cards`;
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+    };
+    return await this._request(url, options);
   }
 
-  // Редактирование профиля
   async setUserInfo(data) {
-    return await this._request(`${this._baseUrl}/users/me`, {
+    const url = `${this._baseUrl}/users/me`;
+    const options = {
       method: "PATCH",
-      headers: this._headers,
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
       body: JSON.stringify({
         name: data.name,
         about: data.about,
         email: data.email,
       }),
-    });
-  }
-
-  // Добавление новой карточки
-  async addCard(data) {
-    return await this._request(`${this._baseUrl}/cards`, {
-      method: "POST",
-      headers: this._headers,
-      body: JSON.stringify(data),
-    });
-  }
-
-  // Удаление карточки с сервера
-  async deleteCard(cardId) {
-    return await this._request(`${this._baseUrl}/cards/${cardId}`, {
-      method: "DELETE",
-      headers: this._headers,
-    });
-  }
-
-  async changeLikeCardStatus(isLiked, cardId) {
-    const url = isLiked ? `${this._baseUrl}/cards/${cardId}/likes` : `${this._baseUrl}/cards/${cardId}/likes`;
-    const headers = {
-      authorization: `Bearer ${localStorage.getItem("jwt")}`,
-      "Content-Type": "application/json",
     };
-    return fetch(url, {
-      method: isLiked ? 'DELETE' : 'PUT',
-      headers: headers,
-    })
+    return await this._request(url, options);
   }
 
-  
+  async addCard(data) {
+    const url = `${this._baseUrl}/cards`;
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+      body: JSON.stringify(data),
+    };
+    return await this._request(url, options);
+  }
 
+  async deleteCard(cardId) {
+    const url = `${this._baseUrl}/cards/${cardId}`;
+    const options = {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+    };
+    return await this._request(url, options);
+  }
 
-  // Обновление аватара пользователя:
   async setUserAvatar(data) {
-    return await this._request(`${this._baseUrl}/users/me/avatar`, {
+    const url = `${this._baseUrl}/users/me/avatar`;
+    const options = {
       method: "PATCH",
-      headers: this._headers,
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
       body: JSON.stringify({
         avatar: data.avatar,
       }),
-    });
+    };
+    return await this._request(url, options);
   }
 }
 
+const jwtToken = localStorage.getItem("jwt");
 const api = new Api({
   baseUrl: "http://localhost:3000",
   headers: {
-    authorization: `Bearer ${localStorage.getItem("jwt")}`,
     "Content-Type": "application/json",
+    Authorization: `Bearer ${jwtToken}`,
   },
 });
 

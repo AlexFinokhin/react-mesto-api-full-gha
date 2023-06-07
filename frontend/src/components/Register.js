@@ -54,7 +54,7 @@ function Register({ onSignUp }) {
       </form>
       <p className="login__text">
         Уже зарегистрированы?{" "}
-        <Link to="/signin" className="login__text-link">
+        <Link to="/sign-in" className="login__text-link">
           Войти
         </Link>
       </p>
