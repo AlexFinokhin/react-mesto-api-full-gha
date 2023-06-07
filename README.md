@@ -9,7 +9,7 @@
 
 ## Ссылки на проект
 
-IP-адрес 51.250.84.63
+IP 51.250.84.63
 
 Frontend https://ryangosling.nomoredomains.rocks
 
