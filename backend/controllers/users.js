@@ -6,6 +6,8 @@ const ConflictError = require('../errors/409-ConflictError');
 const NotFoundError = require('../errors/404-NotFoundError');
 const BadRequestError = require('../errors/400-BadRequestError');
 
+const { JWT_SECRET } = process.env;
+
 async function getUsers(request, response, next) {
   try {
     const users = await userSchema.find({});
@@ -132,7 +134,9 @@ async function login(request, response, next) {
     const { email, password } = request.body;
 
     const user = await userSchema.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, 'ryangosling', { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, process.env.NODE_ENV === 'production' ? JWT_SECRET : 'ryangosling', {
+      expiresIn: '7d',
+    });
 
     response.json({ token });
   } catch (error) {
