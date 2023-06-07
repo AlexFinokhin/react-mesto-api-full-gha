@@ -36,40 +36,45 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('jwt');
+    const fetchData = async () => {
+      const token = localStorage.getItem('jwt');
 
-    if (token) {
-      auth.getJwt(token)
-        .then((data) => {
+      if (token) {
+        try {
+          const data = await auth.getJwt(token);
           setIsLoggedIn(true);
           setUserEmail(data.email);
-        })
-        .then(() => {
           navigate("/", { replace: true });
-        });
 
-      Promise.all([api.getCurrentUserInfo(), api.getInitialCards()])
-        .then(res => {
-          const [userData, cardsArray] = res;
+          const [userData, cardsArray] = await Promise.all([
+            api.getCurrentUserInfo(),
+            api.getInitialCards()
+          ]);
           setCards(cardsArray.reverse());
           setCurrentUser(userData);
-        })
-        .catch(err => console.log(err));
-    }
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    };
+
+    fetchData();
   }, [navigate]);
 
   // проблемный лайк
-  const handleCardLike = (card) => {
-    const isLiked = card.likes.some((i) => i === currentUser._id);
+  const handleCardLike = async (card) => {
+    try {
+      const isLiked = card.likes.some((id) => id === currentUser._id);
 
-    api.changeLikeCardStatus(isLiked, card._id)
-      .then((newCard) => {
-        setCards((state) =>
-          state.map((c) => (c._id === card._id ? newCard : c))
-        );
-      })
-      .catch((err) => console.log(err));
+      const newCard = await api.changeLikeCardStatus(isLiked, card._id);
+      setCards((state) =>
+        state.map((c) => (c._id === card._id ? newCard : c))
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
+
 
 
   const onSignUp = useCallback(
