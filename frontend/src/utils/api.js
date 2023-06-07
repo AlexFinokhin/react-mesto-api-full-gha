@@ -112,7 +112,8 @@ export class Api {
 
 const jwtToken = localStorage.getItem("jwt");
 const api = new Api({
-  baseUrl: "http://localhost:3000",
+  // baseUrl: "http://localhost:3000",
+  baseUrl: "https://api.ryangosling.nomoredomains.rocks",
   headers: {
     "Content-Type": "application/json",
     Authorization: `Bearer ${jwtToken}`,
