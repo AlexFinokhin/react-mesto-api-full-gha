@@ -75,8 +75,6 @@ function App() {
     }
   };
 
-
-
   const onSignUp = useCallback(
     async ({ email, password }) => {
       try {
