@@ -30,8 +30,10 @@ async function start() {
       useUnifiedTopology: true,
     });
     await app.listen(PORT);
+    // eslint-disable-next-line no-console
     console.log(`Ееееее все запустилось\n${MONGO_URL}\nPort: ${PORT}`);
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.log(err);
   }
 }
