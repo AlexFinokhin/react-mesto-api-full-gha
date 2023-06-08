@@ -17,7 +17,7 @@ export class Api {
   }
 
   // проблемный лайк
-  async changeLikeCardStatus(isLiked, cardId) {
+  async changeCardLikeStatus(isLiked, cardId) {
     const method = isLiked ? "DELETE" : "PUT";
     const url = `${this._baseUrl}/cards/${cardId}/likes`;
     const options = {
@@ -29,7 +29,7 @@ export class Api {
     };
     return await this._request(url, options);
   }
-
+  
   async getCurrentUserInfo() {
     const url = `${this._baseUrl}/users/me`;
     const options = {

@@ -50,6 +50,7 @@ function App() {
             api.getCurrentUserInfo(),
             api.getInitialCards()
           ]);
+
           setCards(cardsArray.reverse());
           setCurrentUser(userData);
         } catch (err) {
@@ -61,17 +62,14 @@ function App() {
     fetchData();
   }, [navigate]);
 
-  // проблемный лайк
   const handleCardLike = async (card) => {
+    const isLiked = card.likes.some((id) => id === currentUser._id);
+    const newCards = cards.map((c) => c._id === card._id ? { ...c, likes: isLiked ? c.likes.filter((id) => id !== currentUser._id) : [...c.likes, currentUser._id] } : c);
+    setCards(newCards);
     try {
-      const isLiked = card.likes.some((id) => id === currentUser._id);
-
-      const newCard = await api.changeLikeCardStatus(isLiked, card._id);
-      setCards((state) =>
-        state.map((c) => (c._id === card._id ? newCard : c))
-      );
-    } catch (err) {
-      console.log(err);
+      await api.changeCardLikeStatus(isLiked, card._id, currentUser._id);
+    } catch (error) {
+      console.log('Ошибка при обновлении статуса лайка:', error);
     }
   };
 
@@ -118,8 +116,6 @@ function App() {
 
     navigate("/signin");
   }, [navigate]);
-
-
 
   const handleAddPlaceSubmit = async (data) => {
     try {
