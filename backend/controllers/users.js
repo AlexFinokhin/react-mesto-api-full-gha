@@ -42,9 +42,7 @@ async function getUser(request, response, next) {
     }
     response.status(200).send(user);
   } catch (error) {
-    if (error.name === 'CastError') {
-      next(new BadRequestError('Ошибка: некорректный запрос'));
-    } else if (error.message === 'NotFound') {
+    if (error.message === 'NotFound') {
       next(new NotFoundError('Ошибка: пользователь с указанным идентификатором не найден'));
     } else {
       next(error);
@@ -65,11 +63,7 @@ async function updateUser(request, response, next) {
     }
     response.status(200).send(user);
   } catch (error) {
-    if (error.name === 'ValidationError' || error.name === 'CastError') {
-      next(new BadRequestError('Ошибка: неверные данные для обновления пользователя'));
-    } else {
-      next(error);
-    }
+    next(error);
   }
 }
 
@@ -81,9 +75,14 @@ async function updateAvatar(request, response, next) {
       { avatar },
       { new: true, runValidators: true },
     );
+
+    if (!user) {
+      throw new NotFoundError('Ошибка: пользователь с указанным идентификатором не найден');
+    }
+
     response.status(200).send(user);
   } catch (error) {
-    if (error.name === 'CastError' || error.name === 'ValidationError') {
+    if (error.name === 'ValidationError') {
       next(new BadRequestError('Ошибка: неверные данные для обновления аватара'));
     } else {
       next(error);

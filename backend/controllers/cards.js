@@ -57,15 +57,16 @@ async function addCardLike(request, response, next) {
     );
 
     if (!card) {
-      throw new NotFoundError('Ошибка: указан недействительный идентификатор карточки');
+      next(new NotFoundError('Ошибка: указан недействительный идентификатор карточки'));
+    } else {
+      response.send({ data: card });
     }
-
-    response.send({ data: card });
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Ошибка: неверные данные для добавления лайка'));
+    } else {
+      next(error);
     }
-    next(error);
   }
 }
 

@@ -8,7 +8,8 @@ async function verifyToken(request, response, next) {
     const { authorization } = request.headers;
 
     if (!authorization || !authorization.startsWith('Bearer ')) {
-      throw new UnauthorizedError('Для продолжения требуется вход в систему');
+      const error = new UnauthorizedError('Для продолжения требуется вход в систему');
+      return next(error);
     }
 
     const token = authorization.replace('Bearer ', '');
@@ -17,13 +18,14 @@ async function verifyToken(request, response, next) {
     try {
       payload = await jwt.verify(token, process.env.NODE_ENV === 'production' ? JWT_SECRET : 'ryangosling');
     } catch (err) {
-      throw new UnauthorizedError('Для продолжения требуется вход в систему');
+      const error = new UnauthorizedError('Для продолжения требуется вход в систему');
+      return next(error);
     }
 
     request.user = payload;
-    next();
+    return next(); // Возвращаем значение next(), чтобы удовлетворить правило
   } catch (err) {
-    next(err);
+    return next(err);
   }
 }
 

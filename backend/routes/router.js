@@ -29,10 +29,10 @@ router.use(auth);
 router.use('/users', usersRouter);
 router.use('/cards', cardsRouter);
 
-router.use(errorLogger);
-
 router.use((request, response, next) => {
   next(new NotFoundError('Ошибка: Страница не найдена'));
 });
+
+router.use(errorLogger);
 
 module.exports = router;
