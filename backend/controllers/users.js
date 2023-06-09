@@ -5,6 +5,7 @@ const userSchema = require('../models/user');
 const ConflictError = require('../errors/409-ConflictError');
 const NotFoundError = require('../errors/404-NotFoundError');
 const BadRequestError = require('../errors/400-BadRequestError');
+const UnauthorizedError = require('../errors/401-UnauthorizedError');
 
 const { JWT_SECRET } = process.env;
 
@@ -42,8 +43,8 @@ async function getUser(request, response, next) {
     }
     response.status(200).send(user);
   } catch (error) {
-    if (error.message === 'NotFound') {
-      next(new NotFoundError('Ошибка: пользователь с указанным идентификатором не найден'));
+    if (error.name === 'CastError') {
+      next(new BadRequestError('Ошибка: некорректный запрос'));
     } else {
       next(error);
     }
@@ -58,12 +59,18 @@ async function updateUser(request, response, next) {
       { name, about },
       { new: true, runValidators: true },
     );
+
     if (!user) {
       throw new NotFoundError('Ошибка: пользователь с указанным идентификатором не найден');
+    } else {
+      response.status(200).send(user);
     }
-    response.status(200).send(user);
   } catch (error) {
-    next(error);
+    if (error.name === 'CastError') {
+      next(new BadRequestError('Ошибка: некорректный запрос'));
+    } else {
+      next(error);
+    }
   }
 }
 
@@ -75,11 +82,9 @@ async function updateAvatar(request, response, next) {
       { avatar },
       { new: true, runValidators: true },
     );
-
     if (!user) {
       throw new NotFoundError('Ошибка: пользователь с указанным идентификатором не найден');
     }
-
     response.status(200).send(user);
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -139,7 +144,11 @@ async function login(request, response, next) {
 
     response.json({ token });
   } catch (error) {
-    next(error);
+    if (error.name === 'AuthenticationError') {
+      next(new UnauthorizedError('Ошибка: неверный пользователь или пароль'));
+    } else {
+      next(error);
+    }
   }
 }
 

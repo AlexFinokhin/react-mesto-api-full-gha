@@ -80,14 +80,17 @@ async function deleteCardLike(request, response, next) {
 
     if (!card) {
       throw new NotFoundError('Ошибка: указан недействительный идентификатор карточки');
+    } else {
+      response.send({ data: card });
     }
-
-    response.send({ data: card });
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Ошибка: некорректные данные для снятия лайка'));
+    } else if (error.name === 'NotFoundError') {
+      next(error);
+    } else {
+      next(error);
     }
-    next(error);
   }
 }
 
