@@ -86,8 +86,6 @@ async function deleteCardLike(request, response, next) {
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Ошибка: некорректные данные для снятия лайка'));
-    } else if (error.name === 'NotFoundError') {
-      next(error);
     } else {
       next(error);
     }
