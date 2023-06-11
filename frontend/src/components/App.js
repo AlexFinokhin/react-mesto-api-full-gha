@@ -37,7 +37,7 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('jwt');
+      const token = localStorage.getItem("jwt");
 
       if (token) {
         try {
@@ -48,7 +48,7 @@ function App() {
 
           const [userData, cardsArray] = await Promise.all([
             api.getCurrentUserInfo(),
-            api.getInitialCards()
+            api.getInitialCards(),
           ]);
 
           setCards(cardsArray.reverse());
@@ -62,14 +62,15 @@ function App() {
     fetchData();
   }, [navigate]);
 
-  const handleCardLike = async (card) => {
-    const isLiked = card.likes.some((id) => id === currentUser._id);
-    const newCards = cards.map((c) => c._id === card._id ? { ...c, likes: isLiked ? c.likes.filter((id) => id !== currentUser._id) : [...c.likes, currentUser._id] } : c);
-    setCards(newCards);
+  const handleCardLike = async function (card) {
     try {
-      await api.changeCardLikeStatus(isLiked, card._id, currentUser._id);
-    } catch (error) {
-      console.log('Ошибка при обновлении статуса лайка:', error);
+      const isLiked = card.likes.some((userId) => userId === currentUser._id);
+      const data = await api.changeCardLikeStatus(card._id, !isLiked);
+      setCards((state) =>
+        state.map((item) => (item._id === card._id ? data.data : item))
+      );
+    } catch (err) {
+      console.log(err);
     }
   };
 

@@ -17,19 +17,19 @@ export class Api {
   }
 
   // проблемный лайк
-  async changeCardLikeStatus(isLiked, cardId) {
-    const method = isLiked ? "DELETE" : "PUT";
-    const url = `${this._baseUrl}/cards/${cardId}/likes`;
-    const options = {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
-      },
-    };
-    return await this._request(url, options);
+  async changeCardLikeStatus(cardId, isLiked) {
+    try {
+      const method = isLiked ? "PUT" : "DELETE";
+      const response = await fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
+        method: method,
+        headers: this._headers,
+      });
+      return this._checkResponse(response);
+    } catch (err) {
+      throw new Error(err);
+    }
   }
-  
+
   async getCurrentUserInfo() {
     const url = `${this._baseUrl}/users/me`;
     const options = {
