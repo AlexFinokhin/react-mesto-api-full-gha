@@ -109,10 +109,12 @@ function App() {
   );
 
   const onSignOut = useCallback(async () => {
+    auth.handleLogOut();
     await Promise.all([
+       localStorage.removeItem("jwt"),
       setIsLoggedIn(false),
-      setUserEmail(null),
-      localStorage.removeItem("jwt"),
+      setUserEmail(''),
+     
     ]);
 
     navigate("/signin");

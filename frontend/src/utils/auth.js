@@ -40,6 +40,18 @@ export class Auth {
     return this._handleResponse(response);
   }
 
+  async handleLogOut() {
+    const response = await fetch(`${this._baseUrl}/signout`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...this._headers,
+      },
+    });
+    return this._handleResponse(response);
+  }
+
+
   _handleResponse(res) {
     if (res.ok) {
       return res.json();
