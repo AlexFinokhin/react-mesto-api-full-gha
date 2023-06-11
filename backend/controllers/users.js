@@ -152,6 +152,18 @@ async function login(request, response, next) {
   }
 }
 
+async function logout(req, res) {
+  try {
+    await new Promise((resolve) => {
+      res.clearCookie('jwt', { path: '/' });
+      resolve();
+    });
+    res.send({ message: 'До свидания, моя друг!' });
+  } catch (error) {
+    res.status(500).send({ message: 'Произошла ошибка' });
+  }
+}
+
 module.exports = {
   getUsers,
   getUserById,
@@ -160,4 +172,5 @@ module.exports = {
   updateAvatar,
   login,
   createUser,
+  logout,
 };

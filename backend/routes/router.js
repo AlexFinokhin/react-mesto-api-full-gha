@@ -3,7 +3,8 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth');
 const { validationCreateUser, validationLogin } = require('../middlewares/validation');
-const { createUser, login } = require('../controllers/users');
+const { createUser, login, logout } = require('../controllers/users');
+
 const cardsRouter = require('./cards');
 const usersRouter = require('./users');
 const NotFoundError = require('../errors/404-NotFoundError');
@@ -17,6 +18,7 @@ router.use(requestLogger);
 
 router.post('/signin', authLimiter, validationLogin, login);
 router.post('/signup', authLimiter, validationCreateUser, createUser);
+router.get('/signout', logout);
 
 router.use(auth);
 
