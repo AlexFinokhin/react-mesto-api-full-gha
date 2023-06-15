@@ -1,7 +1,6 @@
 export class Api {
   constructor(options) {
     this._baseUrl = options.baseUrl;
-    this._headers = options.headers;
   }
 
   async _request(url, options) {
@@ -16,13 +15,16 @@ export class Api {
     throw new Error("Произошла ошибка");
   }
 
-  // проблемный лайк
   async changeCardLikeStatus(cardId, isLiked) {
     try {
+      const token = localStorage.getItem("jwt");
       const method = isLiked ? "PUT" : "DELETE";
       const response = await fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
         method: method,
-        headers: this._headers,
+        headers: {
+          "content-type": "application/json",
+          "authorization": `Bearer ${token}`,
+        },
       });
       return this._checkResponse(response);
     } catch (err) {
@@ -31,34 +33,37 @@ export class Api {
   }
 
   async getCurrentUserInfo() {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/users/me`;
     const options = {
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
     };
     return await this._request(url, options);
   }
 
   async getInitialCards() {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/cards`;
     const options = {
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
     };
     return await this._request(url, options);
   }
 
   async setUserInfo(data) {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/users/me`;
     const options = {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
         name: data.name,
@@ -70,12 +75,13 @@ export class Api {
   }
 
   async addCard(data) {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/cards`;
     const options = {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     };
@@ -83,24 +89,26 @@ export class Api {
   }
 
   async deleteCard(cardId) {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/cards/${cardId}`;
     const options = {
       method: "DELETE",
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
     };
     return await this._request(url, options);
   }
 
   async setUserAvatar(data) {
+    const token = localStorage.getItem("jwt");
     const url = `${this._baseUrl}/users/me/avatar`;
     const options = {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
-        ...this._headers,
+        "content-type": "application/json",
+        "authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
         avatar: data.avatar,
@@ -110,14 +118,9 @@ export class Api {
   }
 }
 
-const jwtToken = localStorage.getItem("jwt");
 const api = new Api({
   baseUrl: "http://localhost:3000",
   // baseUrl: "https://api.ryangosling.nomoredomains.rocks",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${jwtToken}`,
-  },
 });
 
 export default api;

@@ -38,20 +38,18 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("jwt");
-
       if (token) {
         try {
           const data = await auth.getJwt(token);
           setIsLoggedIn(true);
           setUserEmail(data.email);
           navigate("/", { replace: true });
-
           const [userData, cardsArray] = await Promise.all([
             api.getCurrentUserInfo(),
             api.getInitialCards(),
           ]);
-
           setCards(cardsArray.reverse());
+
           setCurrentUser(userData);
         } catch (err) {
           console.log(err);
@@ -62,17 +60,37 @@ function App() {
     fetchData();
   }, [navigate]);
 
-  const handleCardLike = async function (card) {
-    try {
-      const isLiked = card.likes.some((userId) => userId === currentUser._id);
-      const data = await api.changeCardLikeStatus(card._id, !isLiked);
-      setCards((state) =>
-        state.map((item) => (item._id === card._id ? data.data : item))
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const onSignIn = useCallback(
+    async ({ email, password }) => {
+      try {
+        const res = await auth.handleLogIn({ email, password });
+        console.log("Токен:", res.token); // Вывод токена в консоль для проверки
+        localStorage.setItem("jwt", res.token);
+        setIsLoggedIn(true);
+        setUserEmail(email);
+
+        navigate("/");
+      } catch (error) {
+        setTooltipImageSrc(failure);
+        setTooltipText("Что-то пошло не так! Попробуйте ещё раз.");
+        setIsTooltipOpen(true);
+      }
+    },
+    [navigate]
+  );
+
+  const onSignOut = useCallback(async () => {
+    auth.handleLogOut();
+    await Promise.all([
+      localStorage.removeItem("jwt"),
+      setIsLoggedIn(false),
+      setUserEmail(""),
+      setCurrentUser({}), // Очистка данных пользователя
+      setCards([]), // Очистка списка карточек
+    ]);
+
+    navigate("/signin");
+  }, [navigate]);
 
   const onSignUp = useCallback(
     async ({ email, password }) => {
@@ -91,34 +109,17 @@ function App() {
     [navigate]
   );
 
-  const onSignIn = useCallback(
-    async ({ email, password }) => {
-      try {
-        const res = await auth.handleLogIn({ email, password });
-        localStorage.setItem("jwt", res.token);
-        setIsLoggedIn(true);
-        setUserEmail(email);
-        navigate("/");
-      } catch (error) {
-        setTooltipImageSrc(failure);
-        setTooltipText("Что-то пошло не так! Попробуйте ещё раз.");
-        setIsTooltipOpen(true);
-      }
-    },
-    [navigate]
-  );
-
-  const onSignOut = useCallback(async () => {
-    auth.handleLogOut();
-    await Promise.all([
-       localStorage.removeItem("jwt"),
-      setIsLoggedIn(false),
-      setUserEmail(''),
-     
-    ]);
-
-    navigate("/signin");
-  }, [navigate]);
+  const handleCardLike = async function (card) {
+    try {
+      const isLiked = card.likes.some((userId) => userId === currentUser._id);
+      const data = await api.changeCardLikeStatus(card._id, !isLiked);
+      setCards((state) =>
+        state.map((item) => (item._id === card._id ? data.data : item))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleAddPlaceSubmit = async (data) => {
     try {
